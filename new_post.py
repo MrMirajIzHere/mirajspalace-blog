@@ -1,7 +1,9 @@
 import os
+os.system("")
 import re
 import webbrowser
 from datetime import datetime
+from colorist import vga, bg_vga
 
 def extract_file_id(url):
     if not url:
@@ -35,12 +37,12 @@ def convert_drive_url(url, width=1000):
     return url
 
 def get_datetime():
-    print("\ndate and time (e.g., 24 jul 2026 21:25):")
+    vga("\ndate and time (e.g., 24 jul 2026 21:25):", 6)
     datetime_str = input("> ").strip()
     
     parts = datetime_str.split()
     if len(parts) < 5:
-        print("error: invalid format")
+        bg_vga("error: invalid format", 1)
         return get_datetime()
     
     date_str = " ".join(parts[:3])
@@ -50,12 +52,12 @@ def get_datetime():
     return date_str, time_str
 
 def get_post_name():
-    print("\npost name (optional, press Enter to skip):")
+    vga("\npost name (optional, press Enter to skip):", 6)
     name = input("> ").strip()
     
     drive_url = "https://drive.google.com/drive/u/1/folders/1B49ekUuLaClK84bJ-IOBNTMkVpxNIl7M"
     
-    print(f"\nopen Google Drive folder? (y/n):")
+    vga(f"\nopen Google Drive folder? (y/n):", 3)
     choice = input("> ").strip().lower()
     
     if choice == 'y' or choice == 'yes':
@@ -83,8 +85,49 @@ def generate_filename(date_str, time_str):
     
     return f"{day}{month}{year}_{hour}_{minute}.htm"
 
-def generate_html(date_str, time_str, content_blocks):
-    display_date = f"{date_str} {time_str.replace(' ', '/')}"
+def format_display_date(date_str):
+    """Format date with proper padding for index display"""
+    parts = date_str.lower().split()
+    day = parts[0]
+    month = parts[1][:3]
+    year = parts[2]
+    
+    # Add non-breaking space before single digit days
+    if len(day) == 1:
+        return f"&nbsp;{day}/{month}/{year}"
+    return f"{day}/{month}/{year}"
+
+def format_display_time(time_str, for_post=False):
+    """Format time with proper padding/minutes"""
+    time_parts = time_str.split()
+    hour = time_parts[0]
+    minute = time_parts[1] if len(time_parts) > 1 else '0'
+    
+    # Pad minute with zero if single digit
+    if len(minute) == 1:
+        minute = '0' + minute
+    
+    if for_post:
+        # For post: just hour/minute with no padding
+        return f"{hour}/{minute}"
+    else:
+        # For index: add non-breaking space before single digit hours
+        if len(hour) == 1:
+            return f"&nbsp;{hour}/{minute}"
+        return f"{hour}/{minute}"
+
+def generate_html(date_str, time_str, post_name, content_blocks):
+    display_date = date_str.replace(' ', '/')
+    
+    # Format time for post display (with zero-padded minutes)
+    time_parts = time_str.split()
+    hour = time_parts[0]
+    minute = time_parts[1] if len(time_parts) > 1 else '0'
+    if len(minute) == 1:
+        minute = '0' + minute
+    display_time = f"{hour}/{minute}"
+    
+    name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
     
     html = f'''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html>
@@ -103,7 +146,7 @@ def generate_html(date_str, time_str, content_blocks):
             <div class="header">
             
             <h2>
-            <span style="background-color: #ffffff">&nbsp;{display_date}&nbsp;</span>
+            <span style="background-color: #ffffff">&nbsp;{display_date}&nbsp; {display_time}{name_display}</span>
             &nbsp;
             </h2>
 
@@ -158,32 +201,41 @@ def preview_post(date_str, time_str, post_name, content_blocks, filename):
 def update_index_page(filename, date_str, time_str, post_name):
     index_path = "index.htm"
     
-    if not os.path.exists(index_path):
-        print(f"Warning: {index_path} not found - index not updated")
-        return
+    vga(f"\nupdate index.htm? (y/n):", 3)
+    choice = input("> ").strip().lower()
     
-    display_date = date_str.replace(' ', '/')
-    display_time = time_str.replace(' ', '/')
-    
-    name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
-    
-    new_entry = f'''&nbsp; <a  href="blog/{filename}" style="text-decoration:none">{display_date}&nbsp; {display_time}</a>{name_display}<br>'''
-    
-    with open(index_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    pattern = r'(<span style="line-height:2; font-family: Sharp; background-color: #ffffff; padding:18px;">)'
-    match = re.search(pattern, content)
-    
-    if match:
-        insert_pos = match.end()
-        content = content[:insert_pos] + '\n\t\t\t' + new_entry + content[insert_pos:]
+    if choice == 'y' or choice == 'yes':
+        print(f"updating...")
         
-        with open(index_path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        print(f"  Updated {index_path} with new entry")
+        if not os.path.exists(index_path):
+            bg_vga(f"Warning: {index_path} not found - index not updated", 11)
+            return
+        
+        # Format date and time for index display with proper padding
+        display_date = format_display_date(date_str)
+        display_time = format_display_time(time_str, for_post=False)
+        
+        name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+        
+        new_entry = f'''&nbsp; <a  href="blog/{filename}" style="text-decoration:none">{display_date} {display_time}</a>{name_display}<br>'''
+        
+        with open(index_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        pattern = r'(<span style="line-height:2; font-family: Sharp; background-color: #ffffff; padding:18px;">)'
+        match = re.search(pattern, content)
+        
+        if match:
+            insert_pos = match.end()
+            content = content[:insert_pos] + '\n\t\t\t' + new_entry + content[insert_pos:]
+            
+            with open(index_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"  Updated {index_path} with new entry")
+        else:
+            bg_vga(f"  Warning: Could not find entries section in {index_path}", 11)
     else:
-        print(f"  Warning: Could not find entries section in {index_path}")
+        print("skipping")
 
 def main():
     date_str, time_str = get_datetime()
@@ -201,7 +253,7 @@ def main():
     content_blocks = []
     
     while True:
-        print("\nnext step:")
+        bg_vga("\nnext step:", 6)
         print("1 - add text")
         print("2 - add image")
         print("3 - finish post")
@@ -222,10 +274,10 @@ def main():
                 converted_url = convert_drive_url(url, 1000)
                 
                 if converted_url and converted_url != url:
-                    print(f"  converted to: {converted_url[:60]}...")
+                    bg_vga(f"  converted to: {converted_url[:60]}...", 6)
                 elif not converted_url:
                     converted_url = url
-                    print("  using original URL")
+                    bg_vga("  using original URL", 6)
                 
                 content_blocks.append({
                     'type': 'image',
@@ -235,7 +287,7 @@ def main():
         
         elif choice == '3':
             if not content_blocks:
-                print("Error: no content")
+                bg_vga("Error: no content", 1)
                 continue
             break
         
@@ -243,7 +295,7 @@ def main():
             print("Invalid choice")
     
     if preview_post(date_str, time_str, post_name, content_blocks, filename):
-        html_content = generate_html(date_str, time_str, content_blocks)
+        html_content = generate_html(date_str, time_str, post_name, content_blocks)
         with open(f"blog/{filename}", 'w', encoding='utf-8') as f:
             f.write(html_content)
         print(f"\nPost created: {filename}")
