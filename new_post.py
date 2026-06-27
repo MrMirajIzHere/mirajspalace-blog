@@ -37,13 +37,12 @@ def convert_drive_url(url, width=1000):
     return url
 
 def get_datetime():
-    vga("\ndate and time (e.g., 24 jul 2026 21:25):", 6)
+    vga("\ndate and time (e.g., 24 jul 2026 21:25, or freeform):", 6)
     datetime_str = input("> ").strip()
     
     parts = datetime_str.split()
     if len(parts) < 5:
-        bg_vga("error: invalid format", 1)
-        return get_datetime()
+        return datetime_str, None
     
     date_str = " ".join(parts[:3])
     time_str = parts[3] + " " + parts[4] if len(parts) > 4 else parts[3]
@@ -69,6 +68,11 @@ def get_post_name():
     return name
 
 def generate_filename(date_str, time_str):
+    if time_str is None:
+        filename = date_str.lower().replace(' ', '_').replace('/', '_').replace('\\', '_')
+        filename = re.sub(r'[^a-z0-9_-]', '_', filename)
+        return f"{filename}.htm"
+    
     parts = date_str.lower().split()
     day = parts[0].zfill(2)
     month_map = {
@@ -85,49 +89,47 @@ def generate_filename(date_str, time_str):
     
     return f"{day}{month}{year}_{hour}_{minute}.htm"
 
-def format_display_date(date_str):
-    """Format date with proper padding for index display"""
+def format_display_date(date_str, time_str):
+    if time_str is None:
+        return f"&nbsp;{date_str}&nbsp;"
+    
     parts = date_str.lower().split()
     day = parts[0]
     month = parts[1][:3]
     year = parts[2]
     
-    # Add non-breaking space before single digit days
     if len(day) == 1:
         return f"&nbsp;{day}/{month}/{year}"
     return f"{day}/{month}/{year}"
 
 def format_display_time(time_str, for_post=False):
-    """Format time with proper padding/minutes"""
+    if time_str is None:
+        return "&nbsp;"
+    
     time_parts = time_str.split()
     hour = time_parts[0]
     minute = time_parts[1] if len(time_parts) > 1 else '0'
     
-    # Pad minute with zero if single digit
     if len(minute) == 1:
         minute = '0' + minute
     
     if for_post:
-        # For post: just hour/minute with no padding
         return f"{hour}/{minute}"
     else:
-        # For index: add non-breaking space before single digit hours
         if len(hour) == 1:
             return f"&nbsp;{hour}/{minute}"
         return f"{hour}/{minute}"
 
 def generate_html(date_str, time_str, post_name, content_blocks):
-    display_date = date_str.replace(' ', '/')
+    display_date = format_display_date(date_str, time_str)
+    display_time = format_display_time(time_str, for_post=False)
     
-    # Format time for post display (with zero-padded minutes)
-    time_parts = time_str.split()
-    hour = time_parts[0]
-    minute = time_parts[1] if len(time_parts) > 1 else '0'
-    if len(minute) == 1:
-        minute = '0' + minute
-    display_time = f"{hour}/{minute}"
-    
-    name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+    if time_str is None:
+        name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+        header_display = f"{display_date}{name_display}"
+    else:
+        name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+        header_display = f"{display_date} {display_time}{name_display}"
     
     html = f'''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html>
@@ -146,7 +148,7 @@ def generate_html(date_str, time_str, post_name, content_blocks):
             <div class="header">
             
             <h2>
-            <span style="background-color: #ffffff">&nbsp;{display_date}&nbsp; {display_time}{name_display}</span>
+            <span style="background-color: #ffffff">{header_display}</span>
             &nbsp;
             </h2>
 
@@ -156,7 +158,7 @@ def generate_html(date_str, time_str, post_name, content_blocks):
     for block in content_blocks:
         if block['type'] == 'text':
             html += f'''
-            <p>
+            <br><p>
             <span style="color: #ffffff">{block['content']}</span>
             </p>
 '''
@@ -166,6 +168,12 @@ def generate_html(date_str, time_str, post_name, content_blocks):
             <img border="0" hspace="0" src="{block['url']}" 
             style="width: 1000px; height: auto;" />
             </h2>
+'''
+        elif block['type'] == 'link':
+            html += f'''
+            <p>
+            <a style="color: #ffffff; background-color: #000; padding: 5px 86px;" href="{block['href']}">&nbsp;{block['text']}&nbsp;</a>
+            </p>
 '''
     
     html += '''            
@@ -180,21 +188,27 @@ def generate_html(date_str, time_str, post_name, content_blocks):
     return html
 
 def preview_post(date_str, time_str, post_name, content_blocks, filename):
-    print("\n" + "="*50)
+    print("\n" + "="*100)
     print(f"Filename: {filename}")
-    print(f"Date: {date_str}")
-    print(f"Time: {time_str}")
+    display_date = format_display_date(date_str, time_str)
+    display_time = format_display_time(time_str, for_post=True)
+    if time_str is None:
+        print(f"Date/Time: {display_date.strip()}")
+    else:
+        print(f"Date: {date_str}")
+        print(f"Time: {time_str}")
     print(f"Post name: {post_name if post_name else '(none)'}")
-    print("-"*50)
+    print("-"*100)
     
     for i, block in enumerate(content_blocks, 1):
         if block['type'] == 'text':
-            print(f"{i}. [TEXT] {block['content'][:60]}...")
+            print(f"{i}. [TEXT] {block['content']}")
         elif block['type'] == 'image':
-            display_url = block['url'][:40] + "..." if len(block['url']) > 40 else block['url']
-            print(f"{i}. [IMAGE] {display_url}")
+            print(f"{i}. [IMAGE] {block['url']}")
+        elif block['type'] == 'link':
+            print(f"{i}. [LINK] {block['text']} -> {block['href']}")
     
-    print("="*50)
+    print("="*100)
     confirm = input("\ncreate post? (y/n): ").strip().lower()
     return confirm == 'y' or confirm == ''
 
@@ -211,13 +225,15 @@ def update_index_page(filename, date_str, time_str, post_name):
             bg_vga(f"Warning: {index_path} not found - index not updated", 11)
             return
         
-        # Format date and time for index display with proper padding
-        display_date = format_display_date(date_str)
-        display_time = format_display_time(time_str, for_post=False)
-        
-        name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
-        
-        new_entry = f'''&nbsp; <a  href="blog/{filename}" style="text-decoration:none">{display_date} {display_time}</a>{name_display}<br>'''
+        if time_str is None:
+            display_date = f"&nbsp;{date_str}&nbsp;"
+            name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+            new_entry = f'''&nbsp; <a  href="blog/{filename}" style="text-decoration:none">{display_date}</a>{name_display}<br>'''
+        else:
+            display_date = format_display_date(date_str, time_str)
+            display_time = format_display_time(time_str, for_post=False)
+            name_display = f"&nbsp;- {post_name}&nbsp; " if post_name else "&nbsp; "
+            new_entry = f'''&nbsp; <a  href="blog/{filename}" style="text-decoration:none">{display_date} {display_time}</a>{name_display}<br>'''
         
         with open(index_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -242,7 +258,7 @@ def main():
     post_name = get_post_name()
     
     filename = generate_filename(date_str, time_str)
-    while os.path.exists(filename):
+    while os.path.exists(f"blog/{filename}"):
         print(f"\nWarning: {filename} already exists!")
         change = input("enter new date or press Enter to overwrite: ").strip()
         if not change:
@@ -256,7 +272,8 @@ def main():
         bg_vga("\nnext step:", 6)
         print("1 - add text")
         print("2 - add image")
-        print("3 - finish post")
+        print("3 - add link")
+        print("4 - finish post")
         print("\naction: ", end="")
         choice = input().strip()
         
@@ -286,6 +303,19 @@ def main():
                 print(f"added image")
         
         elif choice == '3':
+            print("Link text: ", end="")
+            link_text = input().strip()
+            print("URL: ", end="")
+            link_url = input().strip()
+            if link_text and link_url:
+                content_blocks.append({
+                    'type': 'link',
+                    'text': link_text,
+                    'href': link_url
+                })
+                print(f"  Added link: {link_text} -> {link_url}")
+        
+        elif choice == '4':
             if not content_blocks:
                 bg_vga("Error: no content", 1)
                 continue
@@ -296,10 +326,11 @@ def main():
     
     if preview_post(date_str, time_str, post_name, content_blocks, filename):
         html_content = generate_html(date_str, time_str, post_name, content_blocks)
+        os.makedirs("blog", exist_ok=True)
         with open(f"blog/{filename}", 'w', encoding='utf-8') as f:
             f.write(html_content)
         print(f"\nPost created: {filename}")
-        print(f"Saved to: {os.path.abspath(filename)}")
+        print(f"Saved to: {os.path.abspath(f'blog/{filename}')}")
         
         update_index_page(filename, date_str, time_str, post_name)
     else:
