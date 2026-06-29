@@ -1,0 +1,4 @@
+.center {
+	width: max-content;
+	left: round(nearest, calc(50vw - width), 1px);
+}
