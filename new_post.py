@@ -36,9 +36,17 @@ def convert_drive_url(url, width=1000):
         return f"https://drive.google.com/thumbnail?id={file_id}&sz=w{width}"
     return url
 
+from datetime import datetime
+
 def get_datetime():
-    vga("\ndate and time (e.g., 24 jul 2026 21:25, or freeform):", 6)
+    vga("\ndate and time (e.g., 24 jul 2026 21:25 or freeform, leave empty for current):", 6)
     datetime_str = input("> ").strip()
+    
+    if not datetime_str:
+        now = datetime.now()
+        datetime_str = now.strftime("%d %b %Y %H:%M")
+        print(f"\nParsed: {datetime_str}")
+        return datetime_str, None
     
     parts = datetime_str.split()
     if len(parts) < 5:
@@ -47,6 +55,8 @@ def get_datetime():
     date_str = " ".join(parts[:3])
     time_str = parts[3] + " " + parts[4] if len(parts) > 4 else parts[3]
     time_str = time_str.replace(':', ' ')
+    
+    print(f"\nParsed: {date_str} {time_str}")
     
     return date_str, time_str
 
