@@ -46,10 +46,27 @@ def get_datetime():
         now = datetime.now()
         datetime_str = now.strftime("%d %b %Y %H:%M")
         print(f"\nParsed: {datetime_str}")
+        parts = datetime_str.split()
+        if len(parts) >= 5:
+            date_str = " ".join(parts[:3])
+            time_str = parts[3] + " " + parts[4]
+            return date_str, time_str
+        elif len(parts) == 4:
+            date_str = " ".join(parts[:3])
+            time_parts = parts[3].split(':')
+            if len(time_parts) == 2:
+                time_str = time_parts[0] + " " + time_parts[1]
+                return date_str, time_str
         return datetime_str, None
     
     parts = datetime_str.split()
     if len(parts) < 5:
+        if len(parts) == 4:
+            time_parts = parts[3].split(':')
+            if len(time_parts) == 2:
+                date_str = " ".join(parts[:3])
+                time_str = time_parts[0] + " " + time_parts[1]
+                return date_str, time_str
         return datetime_str, None
     
     date_str = " ".join(parts[:3])
