@@ -2,6 +2,7 @@ import os
 os.system("")
 import re
 import webbrowser
+import textwrap
 from datetime import datetime
 from colorist import vga, bg_vga
 
@@ -175,7 +176,7 @@ def generate_html(date_str, time_str, post_name, content_blocks):
             <div class="header">
             
             <h2>
-            <span style="background-color: #ffffff">{header_display}</span>
+            <span style="background-color: #ffffff">&nbsp;{header_display}</span>
             &nbsp;
             </h2>
 
@@ -213,31 +214,6 @@ def generate_html(date_str, time_str, post_name, content_blocks):
 </html>'''
     
     return html
-
-def preview_post(date_str, time_str, post_name, content_blocks, filename):
-    print("\n" + "="*100)
-    print(f"Filename: {filename}")
-    display_date = format_display_date(date_str, time_str)
-    display_time = format_display_time(time_str, for_post=True)
-    if time_str is None:
-        print(f"Date/Time: {display_date.strip()}")
-    else:
-        print(f"Date: {date_str}")
-        print(f"Time: {time_str}")
-    print(f"Post name: {post_name if post_name else '(none)'}")
-    print("-"*100)
-    
-    for i, block in enumerate(content_blocks, 1):
-        if block['type'] == 'text':
-            print(f"{i}. [TEXT] {block['content']}")
-        elif block['type'] == 'image':
-            print(f"{i}. [IMAGE] {block['url']}")
-        elif block['type'] == 'link':
-            print(f"{i}. [LINK] {block['text']} -> {block['href']}")
-    
-    print("="*100)
-    confirm = input("\ncreate post? (y/n): ").strip().lower()
-    return confirm == 'y' or confirm == ''
 
 def update_index_page(filename, date_str, time_str, post_name):
     index_path = "index.htm"
@@ -280,6 +256,199 @@ def update_index_page(filename, date_str, time_str, post_name):
     else:
         print("skipping")
 
+def show_preview(date_str, time_str, post_name, content_blocks, filename):
+    print("\n" + "="*100)
+    print(" " * 44 + "POST PREVIEW" + " " * 44)
+    print("="*100)
+    
+    display_date = format_display_date(date_str, time_str)
+    display_time = format_display_time(time_str, for_post=True)
+    
+    if time_str is None:
+        print(f"Date: {display_date.strip()}")
+    else:
+        print(f"Date: {date_str}")
+        print(f"Time: {time_str}")
+    
+    if post_name:
+        print(f"Name: {post_name}")
+    
+    print("-"*100)
+    
+    if not content_blocks:
+        print("(no content yet)")
+    else:
+        for i, block in enumerate(content_blocks, 1):
+            if block['type'] == 'text':
+                content = block['content']
+                content = content.replace('<br>', '\n')
+                
+                prefix = f"{i}. [TEXT] "
+                indent = ' ' * len(prefix)
+                
+                lines = content.split('\n')
+                wrapped_lines = []
+                
+                for line in lines:
+                    if not line.strip():
+                        wrapped_lines.append('')
+                    else:
+                        wrapped = textwrap.wrap(line, width=96)
+                        wrapped_lines.extend(wrapped)
+                
+                output_parts = []
+                for idx, line in enumerate(wrapped_lines):
+                    if idx == 0:
+                        output_parts.append(f"{prefix}{line}")
+                    else:
+                        output_parts.append(f"{indent}{line}")
+                
+                print('\n'.join(output_parts))
+                
+            elif block['type'] == 'image':
+                url_preview = block['url'][:96] + '...' if len(block['url']) > 96 else block['url']
+                print(f"{i}. [IMAGE] {url_preview}")
+                
+            elif block['type'] == 'link':
+                link_text = f"{i}. [LINK] {block['text']} -> {block['href']}"
+                if len(link_text) <= 100:
+                    print(link_text)
+                else:
+                    prefix = f"{i}. [LINK] "
+                    indent = ' ' * len(prefix)
+                    parts = link_text.split(' -> ')
+                    if len(parts) == 2:
+                        print(f"{prefix}{parts[0]} ->")
+                        url_parts = textwrap.wrap(parts[1], width=96 - len(indent))
+                        for idx, url_part in enumerate(url_parts):
+                            if idx == 0:
+                                print(f"{indent}{url_part}")
+                            else:
+                                print(f"{indent}{url_part}")
+                    else:
+                        wrapped = textwrap.wrap(link_text, width=100)
+                        for idx, line in enumerate(wrapped):
+                            if idx == 0:
+                                print(line)
+                            else:
+                                print(f"{' ' * len(prefix)}{line}")
+    
+    print("="*100)
+
+def edit_content_block(content_blocks, date_str, time_str, post_name, filename):
+    if not content_blocks:
+        vga("\nNo content to edit.", 11)
+        return
+    
+    while True:
+        os.system('cls')
+        show_preview(date_str, time_str, post_name, content_blocks, filename)
+        
+        print("\nEnter block number to edit (Enter to finish):")
+        choice = input("> ").strip()
+        
+        if not choice:
+            vga("Exiting edit mode.", 11)
+            break
+        
+        if not choice.isdigit():
+            vga("Invalid choice. Please enter a number.", 11)
+            continue
+        
+        block_num = int(choice) - 1
+        if block_num < 0 or block_num >= len(content_blocks):
+            vga(f"Invalid block number. Choose 1-{len(content_blocks)}.", 11)
+            continue
+        
+        block = content_blocks[block_num]
+        
+        if block['type'] == 'text':
+            edit_text_block(block)
+        elif block['type'] == 'image':
+            edit_image_block(block)
+        elif block['type'] == 'link':
+            edit_link_block(block)
+        
+        vga("\nBlock updated", 2)
+
+def edit_text_block(block):
+    print("\n--- Editing Text Block ---")
+    vga("Current text:", 14)
+    lines = block['content'].split('<br>')
+    for i, line in enumerate(lines, 1):
+        print(f"  {i:2d}: {line}")
+    
+    while True:
+        print("\nEnter line number to edit (Enter to finish):")
+        line_choice = input("> ").strip()
+        
+        if not line_choice:
+            break
+        
+        if not line_choice.isdigit():
+            vga("Invalid choice. Please enter a number.", 11)
+            continue
+        
+        line_num = int(line_choice) - 1
+        if line_num < 0 or line_num >= len(lines):
+            vga(f"Invalid line number. Choose 1-{len(lines)}.", 11)
+            continue
+        
+        current_line = lines[line_num]
+        vga(f"Current line: {current_line}", 14)
+        print("Enter new text (Enter to keep)")
+        new_line = input("> ").strip()
+        
+        if new_line:
+            lines[line_num] = new_line
+            vga(f"Line {line_num + 1} updated.", 2)
+        else:
+            vga("Line unchanged.", 2)
+        
+        print("\nUpdated text:")
+        for i, line in enumerate(lines, 1):
+            print(f"  {i:2d}: {line}")
+    
+    block['content'] = '<br>'.join(lines)
+
+def edit_image_block(block):
+    print("\n--- Editing Image Block ---")
+    vga(f"Current URL: {block['url']}", 14)
+    print("Enter new URL (Enter to keep)")
+    new_url = input("> ").strip()
+    
+    if new_url:
+        converted_url = convert_drive_url(new_url, 1000)
+        if converted_url and converted_url != new_url:
+            bg_vga(f"  converted to: {converted_url[:96]}...", 6)
+        elif not converted_url:
+            converted_url = new_url
+            vga("  using original URL", 2)
+        block['url'] = converted_url
+        vga(f"URL updated to: {block['url']}", 2)
+    else:
+        vga("URL unchanged.", 2)
+
+def edit_link_block(block):
+    print("\n--- Editing Link Block ---")
+    print(f"Current text: {block['text']}")
+    print("Enter new link text (or Enter to keep current):")
+    new_text = input("> ").strip()
+    if new_text:
+        block['text'] = new_text
+        vga(f"Text updated to: {block['text']}", 2)
+    else:
+        vga("Text unchanged.", 2)
+    
+    print(f"\nCurrent URL: {block['href']}")
+    print("Enter new URL (or Enter to keep current):")
+    new_url = input("> ").strip()
+    if new_url:
+        block['href'] = new_url
+        vga(f"URL updated to: {block['href']}", 2)
+    else:
+        vga("URL unchanged.", 2)
+
 def main():
     date_str, time_str = get_datetime()
     post_name = get_post_name()
@@ -296,20 +465,52 @@ def main():
     content_blocks = []
     
     while True:
+        os.system('cls')
+        show_preview(date_str, time_str, post_name, content_blocks, filename)
         bg_vga("\nnext step:", 6)
         print("1 - add text")
         print("2 - add image")
         print("3 - add link")
-        print("4 - finish post")
+        print("4 - edit content")
+        print("5 - finish post")
         print("\naction: ", end="")
         choice = input().strip()
         
         if choice == '1':
-            print("Text: ", end="")
-            text = input().strip()
-            if text:
+            print("Text:")
+            
+            lines = []
+            empty_line_count = 0
+            line_num = 1
+            
+            print(f"{line_num:2d}: ", end='', flush=True)
+            
+            while True:
+                line = input()
+                
+                if line == '':
+                    empty_line_count += 1
+                    if empty_line_count >= 1:
+                        break
+                    
+                    lines.append('')
+                    line_num += 1
+                    print(f"{line_num:2d}: ", end='', flush=True)
+                else:
+                    empty_line_count = 0
+                    lines.append(line)
+                    line_num += 1
+                    print(f"{line_num:2d}: ", end='', flush=True)
+            
+            if lines:
+                while lines and lines[-1] == '':
+                    lines.pop()
+            
+                text = '<br>'.join(lines)
                 content_blocks.append({'type': 'text', 'content': text})
-                print(f"  Added text block ({len(text)} chars)")
+                vga(f"  Added text block ({len(lines)} lines, {sum(len(l) for l in lines)} chars)", 2)
+                
+                show_preview(date_str, time_str, post_name, content_blocks, filename)
         
         elif choice == '2':
             print("image URL: ", end="")
@@ -328,6 +529,8 @@ def main():
                     'url': converted_url
                 })
                 print(f"added image")
+                
+                show_preview(date_str, time_str, post_name, content_blocks, filename)
         
         elif choice == '3':
             print("Link text: ", end="")
@@ -341,27 +544,36 @@ def main():
                     'href': link_url
                 })
                 print(f"  Added link: {link_text} -> {link_url}")
+                
+                show_preview(date_str, time_str, post_name, content_blocks, filename)
         
         elif choice == '4':
+            edit_content_block(content_blocks, date_str, time_str, post_name, filename)
+        
+        elif choice == '5':
             if not content_blocks:
                 bg_vga("Error: no content", 1)
                 continue
+            
+            show_preview(date_str, time_str, post_name, content_blocks, filename)
+            
+            confirm = input("\ncreate post? (y/n, default y): ").strip().lower()
+            if confirm == 'n' or confirm == 'no':
+                print("Cancelled")
+                continue
+            
+            html_content = generate_html(date_str, time_str, post_name, content_blocks)
+            os.makedirs("blog", exist_ok=True)
+            with open(f"blog/{filename}", 'w', encoding='utf-8') as f:
+                f.write(html_content)
+            print(f"\nPost created: {filename}")
+            print(f"Saved to: {os.path.abspath(f'blog/{filename}')}")
+            
+            update_index_page(filename, date_str, time_str, post_name)
             break
         
         else:
             print("Invalid choice")
-    
-    if preview_post(date_str, time_str, post_name, content_blocks, filename):
-        html_content = generate_html(date_str, time_str, post_name, content_blocks)
-        os.makedirs("blog", exist_ok=True)
-        with open(f"blog/{filename}", 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        print(f"\nPost created: {filename}")
-        print(f"Saved to: {os.path.abspath(f'blog/{filename}')}")
-        
-        update_index_page(filename, date_str, time_str, post_name)
-    else:
-        print("Cancelled")
 
 if __name__ == "__main__":
     main()
