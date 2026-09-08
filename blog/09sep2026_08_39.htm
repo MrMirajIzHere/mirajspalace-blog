@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+    <title>blog</title>
+    <link href="/images/favicon1.png" rel="icon" type="image/png" />
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type" />
+</head>
+<body style="background-color: #242448;">
+<p>&nbsp;</p>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+        <tr>
+            <td valign="top" width="1%">
+            <div class="header">
+            
+            <h2>
+            <span style="background-color: #ffffff">&nbsp;09/sep/2026 08/39&nbsp;- Roland EDIROL V-8&nbsp; </span>
+            &nbsp;
+            </h2>
+
+            <a href="../index.htm"><span style="color: #00ffff; background-color: #000000">&nbsp;&lt; BACK &nbsp;</span></a>
+
+            <br><p>
+            <span style="color: #ffffff">Roland EDIROL V-8<br><br><span style="font-weight: bold; font-size: 22px;">Power input:</span><br>9V DC, 2A, center-negative<br><br><span style="font-weight: bold; font-size: 22px;">Video inputs:</span><br>8 composite channels<br>channels 5 through 8 can be s-video<br>channel 8 can be vga<br><br><span style="font-weight: bold; font-size: 22px;">Video outputs:</span><br>2 composite outputs<br>1 s-video output<br>1 composite preview(osd) output<br></span>
+            </p>
+			
+			<p>
+            <a style="color: #ffffff; background-color: #000; padding: 5px 78px;" href="https://www.manualslib.com/manual/400012/Edirol-V-8.html">&nbsp;Roland EDIROL V-8 Owner's Manual&nbsp;</a>
+            </p>
+			
+			<p>
+            <a style="color: #ffffff; background-color: #000; padding: 5px 86px;" href="https://www.manualslib.com/manual/2839463/Roland-V-8.html#product-Edirol%20V-8">&nbsp;Roland EDIROL V-8 Service Notes&nbsp;</a>
+            </p>
+
+            <br><p>
+            <span style="color: #ffffff"><span style="font-weight: bold; font-size: 22px;">The issue:</span><br>I've been having intermittent problems with it for a long time,<br>the picture would distort on bright image, <br>the feedback would trip the TBC causing glitches, dropouts, and stuttering if it got too bright.<br><br>The root cause turned out to be that LM2662M ic(Jack1 board, -5volt supply) has failed,<br>i can assume that it was able to get a negative voltage out only when fully cold.<br>By the time i decided take the mixer apart completely, the ic has failed fully,<br>to the point of discoloration of its package, the board, and adjacent capacitors around it.</span>
+            </p>
+
+            <h2>
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1IxYQmuQA-IscSBhNpSRC31mOTndLhNqU&sz=w500" 
+            style="width: 500px; height: auto;" />
+            </h2>
+
+            <p>
+            <span style="color: #ffffff">This ic might've also taken out the power supply due to added strain.<br>Other regulators upstream from LM2662M before the power supply seem unharmed.</span>
+            </p>
+
+            <p>
+            <a style="color: #ffffff; background-color: #000; padding: 5px 86px;" href="https://blog.mirajspalace.space/blog/08sep2026_22_04.htm">&nbsp;08/sep/2026 22/04 - Roland PSB-1U&nbsp;</a>
+            </p>
+
+            <br><p>
+            <span style="color: #ffffff"><span style="font-weight: bold; font-size: 22px;">Taking apart the EDIROL V-8:</span><br>Remove 6 screws from the sides and 6 screws from the bottom(ones in the bottom are different shape)<br>Then the bottom case can be lifted up<br><br>- Disconnect all the cables from the main board(there are lots of them)<br><br>- Disconnect the wide ribbon cable that goes from Scan Conv to Jack1,<br>if you can't get to it, be careful to to not rip it when removing the Main Board bracket<br>(if you remove the bracket slowly, it will give you more space, or the ribbon will disconnect it self)<br><br>- Remove all the screws that hold in the Main Board/Scan Conv bracket:<br>-- 4 screws that connect it to the outer casing<br>-- 3 screws that hold it to the Jack3 board<br>Do not remove the last 4 screws from the Jack3 board<br><br>- Slide the bracket back and guide all the cables through the holes.<br>Don't try to remove or bend the plastic protectors.</span>
+            </p>
+
+            <h2>
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1zRvnRO0imfAZzBbDtLTzrAOx1LjASHhF&sz=w500" 
+            style="width: 500px; height: auto;" />
+
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1GL4aUymw88im4xYNORRqR3_Lr3X0enmI&sz=w500" 
+            style="width: 500px; height: auto;" />
+			
+			<br>
+			
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1woHmTwa_zaGeNlPhcQqNrF_n7bgH7mwC&sz=w500" 
+            style="width: 500px; height: auto;" />
+            </h2>
+
+            <p>
+            <span style="color: #ffffff">- After the Main Board bracket is removed, undo all the screws from the back panel,<br>including the vga standoffs, excluding the grounding terminal<br>Take your time to not miss any, as it can damage to some jacks.<br><br>- After you've removed all the screws, the Jack board assembly should be free,<br>slide it back guiding all the jacks through their holes<br>(be aware that bnc jacks have studs on their sides)</span>
+            </p>
+
+            <h2>
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1RZzGXFAoftdcKcrCeJ4Zt8GFQGp--oBw&sz=w500" 
+            style="width: 500px; height: auto;" />
+
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=10si-bJK0U87E8fG_0sZRD6F2A26nHgcq&sz=w500" 
+            style="width: 500px; height: auto;" />
+            </h2>
+            
+            </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</body>
+</html>
