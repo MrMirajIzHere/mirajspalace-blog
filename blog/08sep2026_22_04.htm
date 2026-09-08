@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+    <title>blog</title>
+    <link href="/images/favicon1.png" rel="icon" type="image/png" />
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type" />
+</head>
+<body style="background-color: #242448;">
+<p>&nbsp;</p>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+        <tr>
+            <td valign="top" width="1%">
+            <div class="header">
+            
+            <h2>
+            <span style="background-color: #ffffff">&nbsp;08/sep/2026 22/04&nbsp;- Roland PSB-1U&nbsp; </span>
+            &nbsp;
+            </h2>
+
+            <a href="../index.htm"><span style="color: #00ffff; background-color: #000000">&nbsp;&lt; BACK &nbsp;</span></a>
+<p>
+            <span style="color: #ffffff">Roland PSB-1U <br>input: 90-260V AV<br>output: 9V DC, 2A, center-negative</span>
+            </p>
+
+            <h2>
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1uowa2VfDb1gleCWmwj5LZGG643jBZ5E1&sz=w500" 
+            style="width: 500px; height: auto;" />
+			</h2>
+			
+			<h2>
+            <img border="0" hspace="0" src="https://drive.google.com/thumbnail?id=1Ur-w1wG62oX4CP0GwwHqGy91ME7aA2F5&sz=w500" 
+            style="width: 500px; height: auto;" />
+            </h2>
+<p>
+            <span style="color: #ffffff">Description:<br>A switching power supply.<br>Output filter is 1000uF(low esr) cap with a ceramic under it, choke, and 470uF(low esr) cap<br>Feedback loop is optocoupler and a TL431. VCC to pwm controller is 15-16V.</span>
+            </p>
+<p>
+            <span style="color: #ffffff">The fucky wucky:<br>Was random and non-repeatable on every power cycle after letting it rest:<br>slow sawtooth ripple(1Vpp+ at no load)<br>high frequency bursts every 8ms(0.5Vpp+, at no load and at full load)<br>constant high-frequency ripple(0.5Vpp, at standby or full load)</span>
+            </p>
+<p>
+            <span style="color: #ffffff">The fix:<br>The pwm controller is an SG6848(also marked as AAHxx(xx is date code)) in a 6-pin SOT-26 package.<br>Replacements include OB2263MP, LD7535, and CR6848. <br>I swapped the SG6848 for an OB2263MP due to very wide availability.</span>
+            </p>
+<p>
+            <span style="color: #ffffff">I strongly suggest a hot air station or a fine tipped soldering iron, and loads(and i meand LOADS) of flux.<br>Just because i could do it with a soviet era soldering iron and a used wedge tip,<br>doesn't mean that you should try it that way, you are more than likely to blow something up</span>
+            </p>
+<p>
+            <span style="color: #ffffff">Discharge the big cap through a resistor, don't get killed</span>
+            </p>
+<p>
+            <span style="color: #ffffff">The resulting stats:<br>After the swap: 9.37V output, ~10mVpp ripple with no load.<br>With EDIROL V-8 mixer connected in standby ripple grows to about 0.4Vpp</span>
+            </p>
+<p>
+            <span style="color: #ffffff">if roland wants to sue me for sharing all this info and photos,<br>good luck getting through the iron curtain :)</span>
+            </p>
+            
+            </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</body>
+</html>
